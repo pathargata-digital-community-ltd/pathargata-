@@ -258,23 +258,42 @@
     <script src="js/emergency.js" defer></script>
 
     <!-- অন-স্টেট চেঞ্জ লজিক (ইনিশিয়াল লোডার) -->
-    <script type="module">
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        const auth = getAuth();
-        onAuthStateChanged(auth, (user) => {
-            const splash = document.getElementById('splash-screen');
-            setTimeout(() => { splash.classList.add('hidden-custom'); }, 1500);
+    <!-- এই অংশটি আপনার ফাইলের শেষ <script type="module"> এর বদলে বসান -->
+<script type="module">
+    // ১. config.js থেকে window ভেরিয়েবলগুলো লোড হওয়ার জন্য অপেক্ষা করবে
+    window.addEventListener('load', function() {
+        const startApp = setInterval(() => {
+            // চেক করবে config.js এবং অন্য ফাইলগুলো কি গ্লোবাল উইন্ডোতে পাওয়া যাচ্ছে?
+            if (window.auth && window.fbAuth && window.fb) {
+                clearInterval(startApp);
+                console.log("App Engine Started...");
 
-            if (user) {
-                window.currentUser = user;
-                document.getElementById('auth-screen').classList.add('hidden-custom');
-                document.getElementById('main-app').classList.remove('hidden-custom');
-                // ইনিশিয়াল ডাটা লোড ফাংশনগুলো এখানে থাকবে (যেমন: loadFeed('all'))
-            } else {
-                document.getElementById('auth-screen').classList.remove('hidden-custom');
-                document.getElementById('main-app').classList.add('hidden-custom');
+                window.fbAuth.onAuthStateChanged(window.auth, (user) => {
+                    if (user) {
+                        window.currentUser = user;
+                        document.getElementById('auth-screen').classList.add('hidden-custom');
+                        document.getElementById('main-app').classList.remove('hidden-custom');
+
+                        // ২. ইউজার ডাটা লোড হলে বাকি কাজ শুরু হবে
+                        window.fb.onValue(window.fb.ref(window.db, 'users/' + user.uid), (snap) => {
+                            window.userDetails = snap.val() || {};
+                            
+                            // ৩. সব মডুলার ফাইল থেকে প্রয়োজনীয় ফাংশনগুলো কল করা
+                            if (window.updateUIWithUserData) window.updateUIWithUserData(); 
+                            if (window.loadFeed) window.loadFeed('all', true);             
+                            if (window.loadNotes) window.loadNotes();                      
+                            if (window.loadServiceCategories) window.loadServiceCategories();
+                            if (window.listenForNotificationBadge) window.listenForNotificationBadge(user.uid);
+                        });
+
+                    } else {
+                        document.getElementById('auth-screen').classList.remove('hidden-custom');
+                        document.getElementById('main-app').classList.add('hidden-custom');
+                    }
+                });
             }
-        });
-    </script>
+        }, 200); 
+    });
+</script>
 </body>
 </html>
