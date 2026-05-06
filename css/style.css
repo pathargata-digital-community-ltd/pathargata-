@@ -1,0 +1,491 @@
+/* --- Base Styles & Typography --- */
+body {
+    font-family: 'Hind Siliguri', sans-serif;
+    background-color: #f0f2f5;
+    font-size: 16px;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+input,
+textarea {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+.pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+    padding-top: env(safe-area-inset-top);
+}
+
+.app-container {
+    max-width: 480px;
+    margin: 0 auto;
+    background: #ffffff;
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: calc(75px + env(safe-area-inset-bottom));
+}
+
+/* --- Nav Buttons --- */
+.nav-active {
+    color: #16a34a;
+    border-top: 2px solid #16a34a;
+}
+
+.nav-btn {
+    color: #65676b;
+    position: relative;
+    transition: all 0.2s ease-in-out;
+}
+
+.nav-btn:active {
+    transform: scale(0.9);
+}
+
+.nav-btn i {
+    font-size: 1.6rem;
+    margin-bottom: 2px;
+    transition: transform 0.5s ease;
+}
+
+.nav-btn p {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.hidden-custom {
+    display: none !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid #16a34a;
+    border-color: transparent;
+}
+
+button,
+.cursor-pointer {
+    transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+button:active {
+    transform: scale(0.96);
+}
+
+/* --- Sidebar Animation --- */
+#sidebar {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(-100%);
+}
+
+#sidebar.open {
+    transform: translateX(0);
+}
+
+.sidebar-overlay {
+    transition: opacity 0.3s;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.sidebar-item {
+    border-radius: 0 50px 50px 0;
+    margin-right: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-item:active {
+    background-color: #f0fdf4;
+}
+
+/* --- Chat Bubbles --- */
+.chat-bubble-me {
+    background: #16a34a;
+    color: white;
+    border-radius: 18px 18px 0 18px;
+    word-wrap: break-word;
+    font-size: 15px;
+}
+
+.chat-bubble-other {
+    background: #e4e6eb;
+    color: black;
+    border-radius: 18px 18px 18px 0;
+    word-wrap: break-word;
+    font-size: 15px;
+}
+
+/* --- Post Customizations --- */
+.post-color-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.post-color-dot:hover,
+.post-color-dot.selected {
+    transform: scale(1.2);
+    border-color: #333;
+}
+
+.colored-post-bg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 250px;
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background-size: cover;
+    background-position: center;
+}
+
+.post-menu-dropdown {
+    transform-origin: top right;
+    transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+}
+
+.cover-photo-gradient {
+    background: linear-gradient(135deg, #16a34a 0%, #0d9488 100%);
+    background-size: cover;
+    background-position: center;
+}
+
+/* --- FAB (Floating Action Button) --- */
+.fab-options {
+    transition: all 0.3s ease-in-out;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+}
+
+.fab-options.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.fab-btn {
+    transition: transform 0.3s;
+}
+
+.fab-btn.rotate {
+    transform: rotate(45deg);
+    background-color: #ef4444;
+    border-color: #ef4444;
+}
+
+#fab-container {
+    transition: transform 0.3s ease-in-out;
+}
+
+#fab-container.scroll-hidden {
+    transform: translateY(200%);
+}
+
+/* --- Toasts & Badges --- */
+#toast-container {
+    position: fixed;
+    bottom: calc(90px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 90%;
+    max-width: 400px;
+    pointer-events: none;
+}
+
+.toast {
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 15px;
+    animation: fadeUp 0.3s ease-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4px);
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 10px;
+    border: 2px solid white;
+    display: none;
+    min-width: 18px;
+    text-align: center;
+    z-index: 10;
+}
+
+.badge.active { display: block; }
+
+.nav-badge {
+    position: absolute;
+    top: -2px;
+    right: 20%;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 1px 5px;
+    border-radius: 10px;
+    border: 2px solid white;
+    display: none;
+}
+
+/* --- Modals --- */
+#comment-full-modal {
+    transition: transform 0.3s ease-in-out;
+    transform: translateY(100%);
+}
+
+#comment-full-modal.open { transform: translateY(0); }
+
+#search-modal {
+    transition: opacity 0.3s;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#search-modal.open { opacity: 1; pointer-events: auto; }
+
+#tag-friends-modal,
+#feeling-modal {
+    transition: transform 0.3s ease-in-out;
+    transform: translateY(100%);
+}
+
+#tag-friends-modal.open,
+#feeling-modal.open { transform: translateY(0); }
+
+#image-viewer-modal {
+    transition: opacity 0.3s;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#image-viewer-modal.open { opacity: 1; pointer-events: auto; }
+
+/* --- Polls & Skeletons --- */
+.poll-option { transition: all 0.2s; }
+.poll-fill { transition: width 0.5s ease-out; }
+
+.skeleton {
+    background: #e1e4e8;
+    border-radius: 4px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.verified-badge { color: #1d9bf0; margin-left: 4px; font-size: 0.95em; }
+.journalist-badge { color: #8b5cf6; margin-left: 4px; font-size: 0.95em; }
+
+.journalist-post {
+    border: 2px solid #ddd6fe !important;
+    background-color: #faf5ff;
+}
+
+/* --- Fonts Size Variants --- */
+body.text-large { font-size: 120%; }
+body.text-small { font-size: 90%; }
+
+/* --- Emergency & Video --- */
+@keyframes emergency-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.btn-emergency { animation: emergency-pulse 2s infinite; }
+
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    background: #000;
+}
+
+.video-container iframe,
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.video-container.portrait { padding-bottom: 177.77%; }
+
+/* --- Feed Tabs --- */
+.feed-tab {
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.feed-tab.active {
+    border-bottom-color: #16a34a;
+    color: #16a34a;
+    font-weight: bold;
+}
+
+/* --- Logo & Graphics --- */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes soft-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(22, 163, 74, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
+
+.logo-animate {
+    animation: float 3s ease-in-out infinite, soft-pulse 2s infinite;
+}
+
+@keyframes highlight-fade {
+    0% { background-color: #dcfce7; }
+    100% { background-color: white; }
+}
+
+.new-post-highlight { animation: highlight-fade 3s ease-out forwards; }
+
+/* --- Monetization & Dashboard --- */
+.monetization-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.monetization-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+    animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.criteria-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.criteria-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.criteria-check { background: #16a34a; color: white; }
+.criteria-cross { background: #334155; color: #94a3b8; }
+
+/* --- Grids & Selected States --- */
+.post-images-grid-1 { grid-template-columns: 1fr; }
+.post-images-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.post-images-grid-2 img { height: 250px; object-fit: cover; }
+
+.plan-card { transition: all 0.2s; border: 2px solid transparent; }
+.plan-card.selected { border-color: #16a34a; background-color: #f0fdf4; }
+
+.payment-method.selected {
+    border-color: #16a34a;
+    background-color: #f0fdf4;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Notes Bubble Styling --- */
+.note-bubble {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    padding: 8px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: relative;
+    max-height: 45px;
+    overflow: hidden;
+}
+
+.note-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px 6px 0 6px;
+    border-style: solid;
+    border-color: #ffffff transparent transparent transparent;
+}
