@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>পাথরঘাটা ডিজিটাল - স্মার্ট সেবা</title>
+
+    <!-- ১. এক্সটার্নাল লাইব্রেরি ও ফন্টসমূহ -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://openfpcdn.io/fingerprintjs/v4"></script>
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+    <!-- ২. কাস্টম সিএসএস ফাইল লিঙ্ক -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <link rel="manifest" href="manifest.json">
+
+    <!-- ৩. ওয়ান সিগন্যাল ও সার্ভিস ওয়ার্কার ইনিশিয়ালাইজেশন -->
+    <script>
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(async function(OneSignal) {
+            await OneSignal.init({
+                appId: "ff16859a-7400-4f70-b307-95d068580ea6",
+                safari_web_id: "web.onesignal.auto.17649533-3d0d-4581-9f93-9c8699101408",
+                notifyButton: { enable: true },
+            });
+            OneSignal.Slidedown.promptPush();
+        });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/Pathargata/service-worker.js')
+                    .then((reg) => console.log('SW Registered:', reg.scope))
+                    .catch((err) => console.error('SW Failed:', err));
+            });
+        }
+    </script>
+</head>
+
+<body id="body-main">
+
+    <!-- টোস্ট কন্টেইনার -->
+    <div id="toast-container"></div>
+
+    <!-- ১. অথেন্টিকেশন স্ক্রিন -->
+    <div id="auth-screen" class="fixed inset-0 bg-white z-[200] flex flex-col items-center justify-center p-6 overflow-y-auto">
+        <div class="text-center mb-8">
+            <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 logo-animate border-4 border-white shadow-xl">
+                <i class="fa-solid fa-map-location-dot text-green-600 text-5xl"></i>
+            </div>
+            <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">পাথরঘাটা ডিজিটাল</h1>
+            <p class="text-gray-500 mt-1 font-medium">স্মার্ট উপজেলা সেবা</p>
+        </div>
+
+        <!-- লগইন ফর্ম -->
+        <div id="login-form" class="w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-6 text-green-700 border-l-4 border-green-600 pl-3">লগইন করুন</h2>
+            <input type="email" id="login-email" placeholder="ইমেইল" class="w-full bg-gray-50 border border-gray-200 p-3.5 rounded-xl mb-3 focus:bg-white transition-all text-base">
+            <div class="relative w-full mb-2">
+                <input type="password" id="login-pass" placeholder="পাসওয়ার্ড" class="w-full bg-gray-50 border border-gray-200 p-3.5 rounded-xl focus:bg-white pr-10 transition-all text-base">
+                <i onclick="togglePassword('login-pass', this)" class="fa-regular fa-eye absolute right-3 top-4 text-gray-500 cursor-pointer text-lg"></i>
+            </div>
+            <div class="text-right mb-6">
+                <span onclick="toggleAuth('forgot')" class="text-sm text-gray-500 hover:text-green-600 cursor-pointer font-medium">পাসওয়ার্ড ভুলে গেছেন?</span>
+            </div>
+            <button onclick="handleLogin()" id="btn-login-action" class="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-green-700 transition active:scale-95 flex justify-center items-center gap-2 text-lg">লগইন</button>
+            <p class="mt-8 text-center text-sm text-gray-600">একাউন্ট নেই? <span onclick="toggleAuth('register')" class="text-green-600 font-bold cursor-pointer hover:underline">রেজিস্ট্রেশন করুন</span></p>
+        </div>
+
+        <!-- রেজিস্ট্রেশন ফর্ম -->
+        <div id="register-form" class="w-full max-w-sm hidden-custom">
+            <h2 class="text-xl font-bold mb-6 text-green-700 border-l-4 border-green-600 pl-3">নতুন একাউন্ট খুলুন</h2>
+            <div class="space-y-4">
+                <div class="flex flex-col items-center mb-2">
+                    <label class="relative cursor-pointer w-24 h-24 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center hover:bg-gray-50 overflow-hidden">
+                        <img id="reg-img-preview" class="w-full h-full object-cover hidden">
+                        <div id="reg-img-placeholder" class="text-center text-gray-400 text-xs">
+                            <i class="fa-solid fa-camera text-2xl mb-1"></i><br>ছবি দিন
+                        </div>
+                        <input type="file" id="reg-profile-pic" accept="image/*" class="hidden" onchange="previewRegImage(this)">
+                    </label>
+                </div>
+                <input type="text" id="reg-name" placeholder="আপনার নাম (বাংলা/English)" maxlength="20" class="w-full bg-gray-50 border p-3.5 rounded-xl text-base">
+                <input type="email" id="reg-email" placeholder="ইমেইল" class="w-full bg-gray-50 border p-3.5 rounded-xl text-base">
+                <input type="tel" id="reg-phone" placeholder="ফোন নাম্বার (১১ ডিজিট)" class="w-full bg-gray-50 border p-3.5 rounded-xl text-base">
+                <select id="reg-union" onchange="loadVillagesForUnion(this.value, 'reg-village')" class="w-full bg-gray-50 border p-3.5 rounded-xl text-base">
+                    <option value="">ইউনিয়ন নির্বাচন করুন</option>
+                    <option value="Patharghata Union Sadar">পাথরঘাটা ইউনিয়ন (সদর)</option>
+                    <option value="Char Duani Union">চরদুয়ানী ইউনিয়ন</option>
+                    <option value="Kakchira Union">কাকচিরা ইউনিয়ন</option>
+                    <option value="Kalmegha Union">কালমেঘা ইউনিয়ন</option>
+                    <option value="Kathaltoli Union">কাঁঠালতলী ইউনিয়ন</option>
+                    <option value="Nachnapara Union">নাচনাপাড়া ইউনিয়ন</option>
+                    <option value="Raihanpur Union">রায়হানপুর ইউনিয়ন</option>
+                </select>
+                <select id="reg-village" class="w-full bg-gray-50 border p-3.5 rounded-xl text-base" disabled>
+                    <option value="">আগে ইউনিয়ন নির্বাচন করুন</option>
+                </select>
+                <div class="relative w-full">
+                    <input type="password" id="reg-pass" placeholder="পাসওয়ার্ড" class="w-full bg-gray-50 border p-3.5 rounded-xl pr-10 text-base">
+                    <i onclick="togglePassword('reg-pass', this)" class="fa-regular fa-eye absolute right-3 top-4 text-gray-500 cursor-pointer"></i>
+                </div>
+                <input type="text" id="reg-ref-code" placeholder="রেফার কোড (ঐচ্ছিক)" class="w-full bg-gray-50 border p-3.5 rounded-xl text-base">
+                <div class="flex items-start gap-2 pt-1">
+                    <input type="checkbox" id="reg-privacy-agree" class="w-5 h-5 text-green-600 rounded">
+                    <label for="reg-privacy-agree" class="text-sm text-gray-600">আমি <a href="#" id="reg-privacy-link" target="_blank" class="text-green-600 font-bold">গোপনীয়তা ও নীতিমালা</a> এর সাথে একমত।</label>
+                </div>
+            </div>
+            <button onclick="handleRegister()" id="btn-reg-action" class="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl mt-6">রেজিস্ট্রেশন সম্পন্ন করুন</button>
+            <p class="mt-8 text-center text-sm text-gray-600">আগেই একাউন্ট আছে? <span onclick="toggleAuth('login')" class="text-green-600 font-bold cursor-pointer">লগইন করুন</span></p>
+        </div>
+
+        <!-- পাসওয়ার্ড রিসেট ফর্ম -->
+        <div id="forgot-form" class="w-full max-w-sm hidden-custom">
+            <h2 class="text-xl font-bold mb-6 text-orange-600 border-l-4 border-orange-500 pl-3">পাসওয়ার্ড রিসেট</h2>
+            <input type="email" id="forgot-email" placeholder="আপনার ইমেইল" class="w-full bg-gray-50 border border-gray-200 p-3.5 rounded-xl mb-6 text-base">
+            <button onclick="handleForgotPass()" id="btn-forgot-action" class="w-full bg-orange-500 text-white font-bold py-3.5 rounded-xl">লিংক পাঠান</button>
+            <p class="mt-8 text-center text-sm text-gray-600"><span onclick="toggleAuth('login')" class="text-green-600 font-bold cursor-pointer">লগইনে ফিরে যান</span></p>
+        </div>
+    </div>
+
+    <!-- ২. স্প্ল্যাশ স্ক্রিন -->
+    <div id="splash-screen" class="fixed inset-0 bg-green-600 z-[150] flex flex-col items-center justify-center text-white transition-opacity duration-500">
+        <i class="fa-solid fa-map-location-dot text-7xl mb-6 logo-animate"></i>
+        <h2 class="text-3xl font-bold">পাথরঘাটা ডিজিটাল</h2>
+        <div class="animate-spin rounded-full h-8 w-8 border-4 border-white border-t-transparent mt-8"></div>
+    </div>
+
+    <!-- ৩. সাইডবার মেনু -->
+    <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="sidebar-overlay fixed inset-0 bg-black bg-opacity-40 z-[140] backdrop-blur-sm hidden-custom"></div>
+    <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-80 bg-white z-[145] shadow-2xl flex flex-col rounded-r-2xl overflow-hidden">
+        <div class="bg-gradient-to-br from-green-600 to-teal-700 text-white pt-10 pb-6 px-6 relative">
+            <div id="sidebar-avatar-container" class="w-16 h-16 rounded-full border-4 border-white/30 bg-white text-green-600 flex items-center justify-center text-2xl shadow-lg mb-3 overflow-hidden">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <h3 id="sidebar-name" class="font-bold text-xl truncate tracking-wide">লোড হচ্ছে...</h3>
+            <p id="sidebar-village" class="text-sm opacity-90 font-light bg-white/20 px-2 py-0.5 rounded-full inline-block mt-1">---</p>
+        </div>
+        <div class="flex-1 overflow-y-auto py-4 bg-white">
+            <ul class="space-y-2">
+                <li onclick="switchPage('profile'); toggleSidebar(false)" class="sidebar-item px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700"><i class="fa-solid fa-user"></i> প্রোফাইল</li>
+                <li onclick="switchPage('monetization'); toggleSidebar(false)" class="sidebar-item px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700"><i class="fa-solid fa-sack-dollar"></i> মনিটাইজেশন</li>
+                <li onclick="switchPage('directory'); toggleSidebar(false)" class="sidebar-item px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700"><i class="fa-solid fa-address-book"></i> ডিরেক্টরি</li>
+                <li onclick="switchPage('market'); toggleSidebar(false)" class="sidebar-item px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700"><i class="fa-solid fa-store"></i> মার্কেট</li>
+                <li onclick="switchPage('complaints'); toggleSidebar(false)" class="sidebar-item px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700"><i class="fa-solid fa-box-archive"></i> অভিযোগ</li>
+                <li onclick="switchPage('settings'); toggleSidebar(false)" class="sidebar-item px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700"><i class="fa-solid fa-gear"></i> সেটিংস</li>
+            </ul>
+        </div>
+        <div class="p-5 border-t bg-gray-50 pb-safe">
+            <button onclick="handleLogout()" class="w-full bg-white border border-red-200 text-red-500 py-3.5 rounded-xl font-bold">লগআউট</button>
+        </div>
+    </div>
+
+    <!-- ৪. মেইন অ্যাপ কন্টেইনার -->
+    <div class="app-container hidden-custom" id="main-app">
+        <!-- হেডার -->
+        <header class="bg-white text-gray-800 p-4 sticky top-0 z-40 flex justify-between items-center shadow-sm border-b pt-safe">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar(true)" class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center"><i class="fa-solid fa-bars text-xl"></i></button>
+                <h1 id="app-header-title" class="text-xl font-bold text-green-600">পাথরঘাটা ডিজিটাল</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleGlobalSearch(true)" class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center"><i class="fa-solid fa-magnifying-glass text-xl"></i></button>
+                <div onclick="switchPage('notifications')" class="cursor-pointer relative">
+                    <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center"><i class="fa-regular fa-bell text-xl"></i></div>
+                    <span id="header-badge-notice" class="badge">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- মূল কন্টেন্ট এরিয়া (সব পেজ এখানে লোড হবে) -->
+        <main id="content-pages">
+            <!-- হোয়াইট স্পেস এবং ফিড এখানে জেনারেট হবে -->
+            <div id="page-home" class="p-0 animate-fade">
+                <div id="live-notices"></div>
+                <div class="bg-white border-b sticky top-[68px] z-30 flex">
+                    <div onclick="filterFeed('all')" id="tab-feed-all" class="flex-1 text-center py-3.5 text-xs font-bold feed-tab active uppercase">উপজেলা</div>
+                    <div onclick="filterFeed('union')" id="tab-feed-union" class="flex-1 text-center py-3.5 text-xs font-bold feed-tab uppercase">ইউনিয়ন</div>
+                    <div onclick="filterFeed('contest')" id="tab-feed-contest" class="flex-1 text-center py-3.5 text-xs font-bold feed-tab uppercase">প্রতিযোগিতা</div>
+                </div>
+                <div id="regular-feed-section" class="bg-gray-100 pb-20">
+                    <div id="notes-list-container" class="flex gap-3 px-4 overflow-x-auto py-4 bg-white shadow-sm mb-2"></div>
+                    <div id="news-feed" class="px-0 space-y-3"></div>
+                    <div id="feed-loader-area" class="pb-10 pt-2 text-center">
+                        <div id="scroll-sentinel" style="height: 10px; width: 100%;"></div>
+                    </div>
+                </div>
+                <!-- প্রতিযোগিতা সেকশন -->
+                <div id="contest-container" class="hidden-custom pb-20"></div>
+            </div>
+
+            <!-- অন্যান্য পেজ (ডিফল্ট হিডেন) -->
+            <div id="page-services" class="hidden p-4 min-h-screen bg-gray-50"></div>
+            <div id="page-messages" class="hidden p-0 min-h-screen bg-white"></div>
+            <div id="page-people" class="hidden p-0 min-h-screen bg-gray-50"></div>
+            <div id="page-profile" class="hidden bg-[#f0f2f5] min-h-screen pb-20"></div>
+            <div id="page-settings" class="hidden p-0 bg-gray-100 min-h-screen"></div>
+            <div id="page-monetization" class="hidden p-4 bg-gray-50"></div>
+            <div id="page-market" class="hidden p-4 bg-gray-100"></div>
+            <div id="page-notifications" class="hidden p-4 min-h-screen bg-gray-50"></div>
+        </main>
+
+        <!-- বটম নেভিগেশন -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2 z-50 max-w-[480px] mx-auto pb-safe">
+            <div onclick="switchPage('home')" id="btn-home" class="nav-btn w-1/5 text-center cursor-pointer nav-active">
+                <i class="fa-solid fa-house"></i><p>হোম</p>
+            </div>
+            <div onclick="switchPage('services')" id="btn-services" class="nav-btn w-1/5 text-center cursor-pointer">
+                <i class="fa-solid fa-layer-group"></i><p>সেবা</p>
+            </div>
+            <div onclick="switchPage('messages')" id="btn-messages" class="nav-btn w-1/5 text-center cursor-pointer">
+                <i class="fa-solid fa-comments"></i><p>মেসেজ</p>
+            </div>
+            <div onclick="switchPage('people')" id="btn-people" class="nav-btn w-1/5 text-center cursor-pointer relative">
+                <i class="fa-solid fa-users"></i><p>মানুষ</p><span id="nav-badge-people" class="nav-badge">0</span>
+            </div>
+            <div onclick="switchPage('profile')" id="btn-profile" class="nav-btn w-1/5 text-center cursor-pointer">
+                <i class="fa-solid fa-user"></i><p>প্রোফাইল</p>
+            </div>
+        </nav>
+
+        <!-- FAB (Floating Action Button) -->
+        <div class="fixed bottom-24 right-5 z-40 flex flex-col items-center gap-4 pb-safe" id="fab-container">
+            <div id="fab-options" class="fab-options flex flex-col gap-3">
+                <button onclick="togglePostModal(true)" class="bg-white text-gray-700 w-14 h-14 rounded-full shadow-lg"><i class="fa-solid fa-pen text-xl"></i></button>
+                <button onclick="togglePollModal(true)" class="bg-white text-blue-600 w-14 h-14 rounded-full shadow-lg"><i class="fa-solid fa-square-poll-vertical text-xl"></i></button>
+            </div>
+            <div onclick="toggleFab()" id="main-fab" class="fab-btn bg-green-600 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-2xl cursor-pointer">
+                <i class="fa-solid fa-plus"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- মডালসমূহ (সব মডাল HTML গঠন এখানে রাখতে হবে) -->
+    <div id="post-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[100] flex items-center justify-center hidden-custom p-4"></div>
+    <div id="poll-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[100] flex items-center justify-center hidden-custom p-4"></div>
+    <div id="comment-full-modal" class="fixed inset-0 bg-white z-[180] flex flex-col hidden-custom"></div>
+    <div id="image-viewer-modal" class="fixed inset-0 bg-black bg-opacity-95 z-[300] hidden-custom flex items-center justify-center"></div>
+
+    <!-- ৫. মডুলার জাভাস্ক্রিপ্ট ফাইল লোডার -->
+    <script type="module" src="js/config.js"></script>
+    <script src="js/ui.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <script src="js/feed.js" defer></script>
+    <script src="js/people.js" defer></script>
+    <script src="js/profile.js" defer></script>
+    <script src="js/messages.js" defer></script>
+    <script src="js/services.js" defer></script>
+    <script src="js/transport.js" defer></script>
+    <script src="js/market.js" defer></script>
+    <script src="js/contest.js" defer></script>
+    <script src="js/emergency.js" defer></script>
+
+    <!-- অন-স্টেট চেঞ্জ লজিক (ইনিশিয়াল লোডার) -->
+    <script type="module">
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        const auth = getAuth();
+        onAuthStateChanged(auth, (user) => {
+            const splash = document.getElementById('splash-screen');
+            setTimeout(() => { splash.classList.add('hidden-custom'); }, 1500);
+
+            if (user) {
+                window.currentUser = user;
+                document.getElementById('auth-screen').classList.add('hidden-custom');
+                document.getElementById('main-app').classList.remove('hidden-custom');
+                // ইনিশিয়াল ডাটা লোড ফাংশনগুলো এখানে থাকবে (যেমন: loadFeed('all'))
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden-custom');
+                document.getElementById('main-app').classList.add('hidden-custom');
+            }
+        });
+    </script>
+</body>
+</html>
