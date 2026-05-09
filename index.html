@@ -14,42 +14,34 @@
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+    <script>eruda.init();</script>
 
     <!-- ২. কাস্টম সিএসএস ফাইল লিঙ্ক -->
     <link rel="stylesheet" href="css/style.css">
-    
     <link rel="manifest" href="manifest.json">
 
-    <!-- ৩. ওয়ান সিগন্যাল ও সার্ভিস ওয়ার্কার ইনিশিয়ালাইজেশন -->
-    <script>
-        window.OneSignalDeferred = window.OneSignalDeferred || [];
-        OneSignalDeferred.push(async function(OneSignal) {
-            await OneSignal.init({
-                appId: "ff16859a-7400-4f70-b307-95d068580ea6",
-                safari_web_id: "web.onesignal.auto.17649533-3d0d-4581-9f93-9c8699101408",
-                notifyButton: { enable: true },
-            });
-            OneSignal.Slidedown.promptPush();
-        });
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/Pathargata/service-worker.js')
-                    .then((reg) => console.log('SW Registered:', reg.scope))
-                    .catch((err) => console.error('SW Failed:', err));
-            });
-        }
-    </script>
+    <style>
+        /* প্রয়োজনীয় ছোট ফিক্স */
+        .hidden-custom { display: none !important; }
+        .logo-animate { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        body { font-family: 'Hind Siliguri', sans-serif; }
+    </style>
 </head>
 
 <body id="body-main">
 
-    <!-- টোস্ট কন্টেইনার -->
+    <!-- ৩. স্প্ল্যাশ স্ক্রিন -->
+    <div id="splash-screen" class="fixed inset-0 bg-green-600 z-[999] flex flex-col items-center justify-center text-white transition-opacity duration-500">
+        <i class="fa-solid fa-map-location-dot text-7xl mb-6 logo-animate"></i>
+        <h2 class="text-3xl font-bold">পাথরঘাটা ডিজিটাল</h2>
+        <div class="animate-spin rounded-full h-8 w-8 border-4 border-white border-t-transparent mt-8"></div>
+    </div>
+
     <div id="toast-container"></div>
 
-    <!-- ১. অথেন্টিকেশন স্ক্রিন -->
-    <div id="auth-screen" class="fixed inset-0 bg-white z-[200] flex flex-col items-center justify-center p-6 overflow-y-auto">
+    <!-- ৪. অথেন্টিকেশন স্ক্রিন -->
+    <div id="auth-screen" class="fixed inset-0 bg-white z-[200] flex flex-col items-center justify-center p-6 overflow-y-auto hidden-custom">
         <div class="text-center mb-8">
             <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 logo-animate border-4 border-white shadow-xl">
                 <i class="fa-solid fa-map-location-dot text-green-600 text-5xl"></i>
@@ -125,16 +117,9 @@
         </div>
     </div>
 
-    <!-- ২. স্প্ল্যাশ স্ক্রিন -->
-    <div id="splash-screen" class="fixed inset-0 bg-green-600 z-[150] flex flex-col items-center justify-center text-white transition-opacity duration-500">
-        <i class="fa-solid fa-map-location-dot text-7xl mb-6 logo-animate"></i>
-        <h2 class="text-3xl font-bold">পাথরঘাটা ডিজিটাল</h2>
-        <div class="animate-spin rounded-full h-8 w-8 border-4 border-white border-t-transparent mt-8"></div>
-    </div>
-
-    <!-- ৩. সাইডবার মেনু -->
-    <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="sidebar-overlay fixed inset-0 bg-black bg-opacity-40 z-[140] backdrop-blur-sm hidden-custom"></div>
-    <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-80 bg-white z-[145] shadow-2xl flex flex-col rounded-r-2xl overflow-hidden">
+    <!-- ৫. সাইডবার মেনু -->
+    <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black bg-opacity-40 z-[140] backdrop-blur-sm hidden-custom"></div>
+    <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-80 bg-white z-[145] shadow-2xl flex flex-col rounded-r-2xl overflow-hidden transform -translate-x-full transition-transform duration-300">
         <div class="bg-gradient-to-br from-green-600 to-teal-700 text-white pt-10 pb-6 px-6 relative">
             <div id="sidebar-avatar-container" class="w-16 h-16 rounded-full border-4 border-white/30 bg-white text-green-600 flex items-center justify-center text-2xl shadow-lg mb-3 overflow-hidden">
                 <i class="fa-solid fa-user"></i>
@@ -144,12 +129,12 @@
         </div>
         <div class="flex-1 overflow-y-auto py-4 bg-white">
             <ul class="space-y-2">
-                <li onclick="switchPage('profile'); toggleSidebar(false)" class="sidebar-item px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700"><i class="fa-solid fa-user"></i> প্রোফাইল</li>
-                <li onclick="switchPage('monetization'); toggleSidebar(false)" class="sidebar-item px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700"><i class="fa-solid fa-sack-dollar"></i> মনিটাইজেশন</li>
-                <li onclick="switchPage('directory'); toggleSidebar(false)" class="sidebar-item px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700"><i class="fa-solid fa-address-book"></i> ডিরেক্টরি</li>
-                <li onclick="switchPage('market'); toggleSidebar(false)" class="sidebar-item px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700"><i class="fa-solid fa-store"></i> মার্কেট</li>
-                <li onclick="switchPage('complaints'); toggleSidebar(false)" class="sidebar-item px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700"><i class="fa-solid fa-box-archive"></i> অভিযোগ</li>
-                <li onclick="switchPage('settings'); toggleSidebar(false)" class="sidebar-item px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700"><i class="fa-solid fa-gear"></i> সেটিংস</li>
+                <li onclick="switchPage('profile'); toggleSidebar(false)" class="px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700 hover:bg-gray-100"><i class="fa-solid fa-user"></i> প্রোফাইল</li>
+                <li onclick="switchPage('monetization'); toggleSidebar(false)" class="px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700 hover:bg-gray-100"><i class="fa-solid fa-sack-dollar"></i> মনিটাইজেশন</li>
+                <li onclick="switchPage('directory'); toggleSidebar(false)" class="px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700 hover:bg-gray-100"><i class="fa-solid fa-address-book"></i> ডিরেক্টরি</li>
+                <li onclick="switchPage('market'); toggleSidebar(false)" class="px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700 hover:bg-gray-100"><i class="fa-solid fa-store"></i> মার্কেট</li>
+                <li onclick="switchPage('complaints'); toggleSidebar(false)" class="px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700 hover:bg-gray-100"><i class="fa-solid fa-box-archive"></i> অভিযোগ</li>
+                <li onclick="switchPage('settings'); toggleSidebar(false)" class="px-6 py-3.5 cursor-pointer flex items-center gap-4 text-gray-700 hover:bg-gray-100"><i class="fa-solid fa-gear"></i> সেটিংস</li>
             </ul>
         </div>
         <div class="p-5 border-t bg-gray-50 pb-safe">
@@ -157,9 +142,8 @@
         </div>
     </div>
 
-    <!-- ৪. মেইন অ্যাপ কন্টেইনার -->
+    <!-- ৬. মেইন অ্যাপ কন্টেইনার -->
     <div class="app-container hidden-custom" id="main-app">
-        <!-- হেডার -->
         <header class="bg-white text-gray-800 p-4 sticky top-0 z-40 flex justify-between items-center shadow-sm border-b pt-safe">
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar(true)" class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center"><i class="fa-solid fa-bars text-xl"></i></button>
@@ -174,9 +158,7 @@
             </div>
         </header>
 
-        <!-- মূল কন্টেন্ট এরিয়া (সব পেজ এখানে লোড হবে) -->
         <main id="content-pages">
-            <!-- হোয়াইট স্পেস এবং ফিড এখানে জেনারেট হবে -->
             <div id="page-home" class="p-0 animate-fade">
                 <div id="live-notices"></div>
                 <div class="bg-white border-b sticky top-[68px] z-30 flex">
@@ -191,11 +173,10 @@
                         <div id="scroll-sentinel" style="height: 10px; width: 100%;"></div>
                     </div>
                 </div>
-                <!-- প্রতিযোগিতা সেকশন -->
                 <div id="contest-container" class="hidden-custom pb-20"></div>
             </div>
 
-            <!-- অন্যান্য পেজ (ডিফল্ট হিডেন) -->
+            <!-- পেজ হোল্ডারসমূহ -->
             <div id="page-services" class="hidden p-4 min-h-screen bg-gray-50"></div>
             <div id="page-messages" class="hidden p-0 min-h-screen bg-white"></div>
             <div id="page-people" class="hidden p-0 min-h-screen bg-gray-50"></div>
@@ -206,44 +187,42 @@
             <div id="page-notifications" class="hidden p-4 min-h-screen bg-gray-50"></div>
         </main>
 
-        <!-- বটম নেভিগেশন -->
         <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2 z-50 max-w-[480px] mx-auto pb-safe">
             <div onclick="switchPage('home')" id="btn-home" class="nav-btn w-1/5 text-center cursor-pointer nav-active">
-                <i class="fa-solid fa-house"></i><p>হোম</p>
+                <i class="fa-solid fa-house"></i><p class="text-[10px]">হোম</p>
             </div>
             <div onclick="switchPage('services')" id="btn-services" class="nav-btn w-1/5 text-center cursor-pointer">
-                <i class="fa-solid fa-layer-group"></i><p>সেবা</p>
+                <i class="fa-solid fa-layer-group"></i><p class="text-[10px]">সেবা</p>
             </div>
             <div onclick="switchPage('messages')" id="btn-messages" class="nav-btn w-1/5 text-center cursor-pointer">
-                <i class="fa-solid fa-comments"></i><p>মেসেজ</p>
+                <i class="fa-solid fa-comments"></i><p class="text-[10px]">মেসেজ</p>
             </div>
             <div onclick="switchPage('people')" id="btn-people" class="nav-btn w-1/5 text-center cursor-pointer relative">
-                <i class="fa-solid fa-users"></i><p>মানুষ</p><span id="nav-badge-people" class="nav-badge">0</span>
+                <i class="fa-solid fa-users"></i><p class="text-[10px]">মানুষ</p><span id="nav-badge-people" class="nav-badge">0</span>
             </div>
             <div onclick="switchPage('profile')" id="btn-profile" class="nav-btn w-1/5 text-center cursor-pointer">
-                <i class="fa-solid fa-user"></i><p>প্রোফাইল</p>
+                <i class="fa-solid fa-user"></i><p class="text-[10px]">প্রোফাইল</p>
             </div>
         </nav>
 
-        <!-- FAB (Floating Action Button) -->
         <div class="fixed bottom-24 right-5 z-40 flex flex-col items-center gap-4 pb-safe" id="fab-container">
-            <div id="fab-options" class="fab-options flex flex-col gap-3">
+            <div id="fab-options" class="hidden-custom flex flex-col gap-3">
                 <button onclick="togglePostModal(true)" class="bg-white text-gray-700 w-14 h-14 rounded-full shadow-lg"><i class="fa-solid fa-pen text-xl"></i></button>
                 <button onclick="togglePollModal(true)" class="bg-white text-blue-600 w-14 h-14 rounded-full shadow-lg"><i class="fa-solid fa-square-poll-vertical text-xl"></i></button>
             </div>
-            <div onclick="toggleFab()" id="main-fab" class="fab-btn bg-green-600 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-2xl cursor-pointer">
+            <div onclick="toggleFab()" id="main-fab" class="bg-green-600 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-2xl cursor-pointer">
                 <i class="fa-solid fa-plus"></i>
             </div>
         </div>
     </div>
 
-    <!-- মডালসমূহ (সব মডাল HTML গঠন এখানে রাখতে হবে) -->
-    <div id="post-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[100] flex items-center justify-center hidden-custom p-4"></div>
-    <div id="poll-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[100] flex items-center justify-center hidden-custom p-4"></div>
-    <div id="comment-full-modal" class="fixed inset-0 bg-white z-[180] flex flex-col hidden-custom"></div>
-    <div id="image-viewer-modal" class="fixed inset-0 bg-black bg-opacity-95 z-[300] hidden-custom flex items-center justify-center"></div>
+    <!-- মডালসমূহ -->
+    <div id="post-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[300] flex items-center justify-center hidden-custom p-4"></div>
+    <div id="poll-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[300] flex items-center justify-center hidden-custom p-4"></div>
+    <div id="comment-full-modal" class="fixed inset-0 bg-white z-[310] flex flex-col hidden-custom"></div>
+    <div id="image-viewer-modal" class="fixed inset-0 bg-black bg-opacity-95 z-[400] hidden-custom flex items-center justify-center"></div>
 
-    <!-- ৫. মডুলার জাভাস্ক্রিপ্ট ফাইল লোডার -->
+    <!-- ৭. মডুলার জাভাস্ক্রিপ্ট ফাইল লোডার -->
     <script type="module" src="js/config.js"></script>
     <script src="js/ui.js" defer></script>
     <script src="js/auth.js" defer></script>
@@ -257,43 +236,55 @@
     <script src="js/contest.js" defer></script>
     <script src="js/emergency.js" defer></script>
 
-    <!-- অন-স্টেট চেঞ্জ লজিক (ইনিশিয়াল লোডার) -->
-    <!-- এই অংশটি আপনার ফাইলের শেষ <script type="module"> এর বদলে বসান -->
-<script type="module">
-    // ১. config.js থেকে window ভেরিয়েবলগুলো লোড হওয়ার জন্য অপেক্ষা করবে
-    window.addEventListener('load', function() {
-        const startApp = setInterval(() => {
-            // চেক করবে config.js এবং অন্য ফাইলগুলো কি গ্লোবাল উইন্ডোতে পাওয়া যাচ্ছে?
-            if (window.auth && window.fbAuth && window.fb) {
-                clearInterval(startApp);
-                console.log("App Engine Started...");
-
-                window.fbAuth.onAuthStateChanged(window.auth, (user) => {
-                    if (user) {
-                        window.currentUser = user;
-                        document.getElementById('auth-screen').classList.add('hidden-custom');
-                        document.getElementById('main-app').classList.remove('hidden-custom');
-
-                        // ২. ইউজার ডাটা লোড হলে বাকি কাজ শুরু হবে
-                        window.fb.onValue(window.fb.ref(window.db, 'users/' + user.uid), (snap) => {
-                            window.userDetails = snap.val() || {};
-                            
-                            // ৩. সব মডুলার ফাইল থেকে প্রয়োজনীয় ফাংশনগুলো কল করা
-                            if (window.updateUIWithUserData) window.updateUIWithUserData(); 
-                            if (window.loadFeed) window.loadFeed('all', true);             
-                            if (window.loadNotes) window.loadNotes();                      
-                            if (window.loadServiceCategories) window.loadServiceCategories();
-                            if (window.listenForNotificationBadge) window.listenForNotificationBadge(user.uid);
-                        });
-
-                    } else {
-                        document.getElementById('auth-screen').classList.remove('hidden-custom');
-                        document.getElementById('main-app').classList.add('hidden-custom');
-                    }
+    <!-- ৮. কোড সিঙ্ক্রোনাইজেশন লজিক -->
+    <script type="module">
+        window.addEventListener('load', function() {
+            // OneSignal ইনিশিয়ালাইজেশন
+            window.OneSignalDeferred = window.OneSignalDeferred || [];
+            OneSignalDeferred.push(async function(OneSignal) {
+                await OneSignal.init({
+                    appId: "ff16859a-7400-4f70-b307-95d068580ea6",
+                    safari_web_id: "web.onesignal.auto.17649533-3d0d-4581-9f93-9c8699101408",
+                    notifyButton: { enable: true },
                 });
-            }
-        }, 200); 
-    });
-</script>
+            });
+
+            // অ্যাপ ইঞ্জিন স্টার্ট (Firebase লোড হওয়া পর্যন্ত ওয়েট করবে)
+            const initInterval = setInterval(() => {
+                if (window.auth && window.fbAuth && window.fb) {
+                    clearInterval(initInterval);
+                    
+                    window.fbAuth.onAuthStateChanged(window.auth, (user) => {
+                        const splash = document.getElementById('splash-screen');
+                        const authScreen = document.getElementById('auth-screen');
+                        const mainApp = document.getElementById('main-app');
+
+                        if (user) {
+                            window.currentUser = user;
+                            authScreen.classList.add('hidden-custom');
+                            mainApp.classList.remove('hidden-custom');
+
+                            window.fb.onValue(window.fb.ref(window.db, 'users/' + user.uid), (snap) => {
+                                window.userDetails = snap.val() || {};
+                                if (window.updateUIWithUserData) window.updateUIWithUserData(); 
+                                if (window.loadFeed) window.loadFeed('all', true);             
+                                if (window.loadNotes) window.loadNotes();                      
+                                if (window.listenForNotificationBadge) window.listenForNotificationBadge(user.uid);
+                            });
+                        } else {
+                            authScreen.classList.remove('hidden-custom');
+                            mainApp.classList.add('hidden-custom');
+                        }
+
+                        // সবকিছু সেট হয়ে গেলে স্প্ল্যাশ স্ক্রিন রিমুভ
+                        if(splash) {
+                            splash.style.opacity = '0';
+                            setTimeout(() => splash.remove(), 500);
+                        }
+                    });
+                }
+            }, 100); 
+        });
+    </script>
 </body>
 </html>
